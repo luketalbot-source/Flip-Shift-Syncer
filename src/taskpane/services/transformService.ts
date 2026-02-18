@@ -65,13 +65,19 @@ function combineDateAndTime(dateStr: string, timeStr: string): string {
  * Generate a deterministic external_id from shift data.
  * The Flip API requires either an internal `id` or an `external_id` on every
  * shift so it can correctly identify and persist each record. When the
- * spreadsheet doesn't supply one, we derive a stable key from the employee
- * and start timestamp so repeated syncs of the same data are idempotent.
+ * spreadsheet doesn't supply one, we derive a stable key from the employee,
+ * start timestamp, and end timestamp so repeated syncs of the same data are
+ * idempotent — regardless of row ordering or insertion/deletion of rows.
+ *
+ * The `occurrenceIndex` handles the rare edge case where the same employee has
+ * two shifts with identical start and end times. The first gets no suffix,
+ * the second gets `-1`, the third `-2`, etc.
  */
-function generateExternalId(employeeId: string, startsAt: string, index: number): string {
-  // Use employee + start timestamp + row index for uniqueness
-  // (index handles the edge case of two shifts for the same employee at the same time)
-  return `excel-${employeeId}-${startsAt.replace(/[^0-9]/g, "")}-${index}`;
+function generateExternalId(employeeId: string, startsAt: string, endsAt: string, occurrenceIndex: number): string {
+  const startClean = startsAt.replace(/[^0-9]/g, "");
+  const endClean = endsAt.replace(/[^0-9]/g, "");
+  const suffix = occurrenceIndex > 0 ? `-${occurrenceIndex}` : "";
+  return `excel-${employeeId}-${startClean}-${endClean}${suffix}`;
 }
 
 /**
@@ -87,6 +93,11 @@ function generateExternalId(employeeId: string, startsAt: string, index: number)
  */
 export function transformToFlipShifts(rows: SheetRow[]): FlipShift[] {
   const shifts: FlipShift[] = [];
+
+  // Track occurrences of each (employee, start, end) combination so we can
+  // generate stable, unique external_ids without relying on row position.
+  // This prevents duplicates when rows are reordered, inserted, or deleted.
+  const occurrenceCounts = new Map<string, number>();
 
   for (let i = 0; i < rows.length; i++) {
     const row = rows[i];
@@ -110,7 +121,12 @@ export function transformToFlipShifts(rows: SheetRow[]): FlipShift[] {
     if (row.external_id) {
       shift.external_id = row.external_id;
     } else {
-      shift.external_id = generateExternalId(row.employee_id, startsAt, i);
+      // Build a key from business-meaningful fields (not row position)
+      const occurrenceKey = `${row.employee_id}|${startsAt}|${endsAt}`;
+      const currentCount = occurrenceCounts.get(occurrenceKey) ?? 0;
+      occurrenceCounts.set(occurrenceKey, currentCount + 1);
+
+      shift.external_id = generateExternalId(row.employee_id, startsAt, endsAt, currentCount);
     }
 
     if (row.location) {
