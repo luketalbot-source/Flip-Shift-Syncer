@@ -16,8 +16,8 @@ An Excel Office Add-in that syncs shift plans from spreadsheets into Flip.
 
 ```bash
 # Clone the repo
-git clone <your-repo-url>
-cd flip-shift-sync
+git clone https://github.com/luketalbot-source/Flip-Shift-Syncer.git
+cd Flip-Shift-Syncer
 
 # Install dependencies
 npm install
@@ -67,46 +67,68 @@ Once the dev server is running, sideload `manifest.xml` into Excel using one of 
 4. Browse to and select the `manifest.xml` file
 5. Click **Upload**
 
-> **Note:** For development, the manifest points to `https://localhost:3000`, so the dev server must be running on the machine where the browser is open.
+> **Note:** For development, the manifest points to `https://localhost:3000`, so the dev server must be running on the machine where the browser is open. For production (GitHub Pages), see below.
 
 ---
 
 ## 3. Deploy to GitHub Pages (Production)
 
-To make the add-in accessible to anyone without running a local dev server:
+The add-in is already deployed at:
+**https://luketalbot-source.github.io/Flip-Shift-Syncer/**
 
-### Step 1: Set your production URL
+Users can download the `manifest.xml` from that page and sideload it — no local dev server needed.
 
-Edit `webpack.config.js` and update `urlProd` with your GitHub Pages URL:
-
-```js
-const urlProd = "https://your-username.github.io/flip-shift-sync/";
-```
-
-### Step 2: Deploy
+### Redeploying after changes
 
 ```bash
-npm run deploy
+npm run build
+# Then manually push dist/ contents to the gh-pages branch,
+# or use: npx gh-pages -d dist
 ```
-
-This builds the production bundle and pushes the `dist/` folder to the `gh-pages` branch of your repo.
-
-### Step 3: Enable GitHub Pages
-
-1. Go to your repo on GitHub
-2. **Settings** > **Pages**
-3. Under "Source", select the `gh-pages` branch
-4. Click **Save**
-
-Your add-in will be available at `https://your-username.github.io/flip-shift-sync/`.
-
-### Step 4: Share the manifest
-
-After deploying, run `npm run build` to generate a production `manifest.xml` in `dist/`. The URLs in this manifest will point to your GitHub Pages URL instead of localhost. Share this file with your users so they can sideload it.
 
 ---
 
-## 4. Configuration
+## 4. CORS Proxy Setup (Required for hosted deployment)
+
+When the add-in is hosted on GitHub Pages (not localhost), it needs a CORS proxy to communicate with the Flip API. We use a **Cloudflare Worker** for this (free tier: 100k requests/day).
+
+### Step 1: Create a Cloudflare account
+
+Sign up at https://dash.cloudflare.com/sign-up (free, no credit card needed).
+
+### Step 2: Install Wrangler CLI
+
+```bash
+npm install -g wrangler
+```
+
+### Step 3: Authenticate
+
+```bash
+wrangler login
+```
+
+### Step 4: Deploy the worker
+
+```bash
+cd worker
+npx wrangler deploy
+```
+
+This will output a URL like:
+```
+https://flip-shift-proxy.your-subdomain.workers.dev
+```
+
+### Step 5: Configure the add-in
+
+In the add-in's **Settings** tab, paste the worker URL into the **Proxy URL** field, then click **Save** and **Test Connection**.
+
+> **Note:** For local development (`npm run dev-server`), leave the Proxy URL field blank — the webpack dev server handles proxying automatically.
+
+---
+
+## 5. Configuration
 
 Once the add-in is loaded in Excel:
 
@@ -117,11 +139,12 @@ Once the add-in is loaded in Excel:
    - **Organization** — Your system ID (e.g. `mycompany`)
    - **Client ID** — API Client ID (from Flip admin portal)
    - **Client Secret** — API Client Secret
+   - **Proxy URL** — Your Cloudflare Worker URL (only needed for hosted deployment, leave blank for local dev)
 4. Click **Save**, then **Test Connection** to verify
 
 ---
 
-## 5. Usage
+## 6. Usage
 
 1. On the **Sync** tab, click **Generate Template** to create a properly formatted worksheet
 2. Fill in your shift data (use the `username` column for automatic employee ID lookup)
@@ -133,7 +156,7 @@ Once the add-in is loaded in Excel:
 ## Project Structure
 
 ```
-flip-shift-sync/
+Flip-Shift-Syncer/
   assets/            — Icon images (Flip logo at various sizes)
   src/
     taskpane/
@@ -142,7 +165,10 @@ flip-shift-sync/
       types/         — TypeScript interfaces
       config.ts      — Local storage config management
     commands/        — Office ribbon command handlers
+  worker/            — Cloudflare Worker CORS proxy
+    index.ts         — Worker source code
+    wrangler.toml    — Wrangler deployment config
   manifest.xml       — Office Add-in manifest (dev)
-  webpack.config.js  — Build config with CORS proxy
+  webpack.config.js  — Build config with CORS proxy (dev)
   SETUP.md           — This file
 ```

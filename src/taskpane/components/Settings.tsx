@@ -147,6 +147,17 @@ const Settings: React.FC<SettingsProps> = ({ onConfigChange }) => {
         />
       </Field>
 
+      <div className={styles.sectionLabel}>Proxy (for hosted deployment)</div>
+
+      <Field label="Proxy URL" hint="e.g. https://flip-proxy.your-subdomain.workers.dev — leave blank for local dev">
+        <Input
+          value={config.proxyUrl || ""}
+          onChange={(_e, data) => setConfig({ ...config, proxyUrl: data.value })}
+          placeholder="https://flip-proxy.your-subdomain.workers.dev"
+          type="url"
+        />
+      </Field>
+
       <div className={styles.buttonRow}>
         <Button appearance="primary" icon={<Save24Regular />} onClick={handleSave}>
           {saved ? "Saved!" : "Save"}

@@ -30,20 +30,33 @@ export class FlipApiError extends Error {
   }
 }
 
-/** Build the full URL for an API endpoint, routed through the /proxy path */
-function buildUrl(_config: SyncConfig, path: string): string {
-  return `/proxy${path}`;
+/** Build the full URL for an API endpoint.
+ *  - If proxyUrl is configured (hosted deployment): route through Cloudflare Worker
+ *  - If running on localhost (dev): route through webpack dev server proxy
+ *  - Otherwise: attempt direct call (may fail with CORS)
+ */
+function buildUrl(config: SyncConfig, path: string): string {
+  if (config.proxyUrl) {
+    return `${config.proxyUrl.replace(/\/+$/, "")}${path}`;
+  }
+  if (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1") {
+    return `/proxy${path}`;
+  }
+  return `${config.baseUrl.replace(/\/+$/, "")}${path}`;
 }
 
 /** Build common headers for all API requests (async — obtains/refreshes OAuth token) */
 async function buildHeaders(config: SyncConfig): Promise<HeadersInit> {
   const token = await getAccessToken(config);
-  const target = config.baseUrl.replace(/\/+$/, "");
-  return {
+  const headers: Record<string, string> = {
     "Content-Type": "application/json",
     Authorization: `Bearer ${token}`,
-    "X-Proxy-Target": target,
   };
+  // Include X-Proxy-Target when routing through a proxy (worker or dev server)
+  if (config.proxyUrl || window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1") {
+    headers["X-Proxy-Target"] = config.baseUrl.replace(/\/+$/, "");
+  }
+  return headers;
 }
 
 /** Parse error response from Flip API */

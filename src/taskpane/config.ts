@@ -11,6 +11,7 @@ const DEFAULT_CONFIG: SyncConfig = {
   organization: "",
   clientId: "",
   clientSecret: "",
+  proxyUrl: "",
 };
 
 /**
@@ -27,6 +28,7 @@ export function loadConfig(): SyncConfig {
         organization: parsed.organization ?? DEFAULT_CONFIG.organization,
         clientId: parsed.clientId ?? DEFAULT_CONFIG.clientId,
         clientSecret: parsed.clientSecret ?? DEFAULT_CONFIG.clientSecret,
+        proxyUrl: parsed.proxyUrl ?? DEFAULT_CONFIG.proxyUrl,
       };
     }
   } catch {

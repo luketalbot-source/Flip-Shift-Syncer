@@ -79,6 +79,9 @@ export interface SyncConfig {
   clientId: string;
   /** OAuth2 API Client Secret */
   clientSecret: string;
+  /** Optional CORS proxy URL for hosted deployments (e.g. Cloudflare Worker URL).
+   *  Leave empty for local dev (uses webpack dev server proxy). */
+  proxyUrl?: string;
 }
 
 // --- Excel data types ---

@@ -39,11 +39,20 @@ function configKey(config: SyncConfig): string {
 
 /**
  * Build the token endpoint URL for the given config.
- * Routes through the /proxy path to avoid CORS issues in development.
+ *  - If proxyUrl is configured (hosted deployment): route through Cloudflare Worker
+ *  - If running on localhost (dev): route through webpack dev server proxy
+ *  - Otherwise: attempt direct call (may fail with CORS)
  */
 function buildTokenUrl(config: SyncConfig): string {
   const org = encodeURIComponent(config.organization.trim());
-  return `/proxy/auth/realms/${org}/protocol/openid-connect/token`;
+  const path = `/auth/realms/${org}/protocol/openid-connect/token`;
+  if (config.proxyUrl) {
+    return `${config.proxyUrl.replace(/\/+$/, "")}${path}`;
+  }
+  if (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1") {
+    return `/proxy${path}`;
+  }
+  return `${config.baseUrl.replace(/\/+$/, "")}${path}`;
 }
 
 /**
@@ -60,14 +69,19 @@ async function fetchToken(config: SyncConfig): Promise<{ accessToken: string; ex
 
   const target = config.baseUrl.replace(/\/+$/, "");
 
+  // Build headers — include X-Proxy-Target only when routing through a proxy
+  const headers: Record<string, string> = {
+    "Content-Type": "application/x-www-form-urlencoded",
+  };
+  if (config.proxyUrl || window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1") {
+    headers["X-Proxy-Target"] = target;
+  }
+
   let response: Response;
   try {
     response = await fetch(tokenUrl, {
       method: "POST",
-      headers: {
-        "Content-Type": "application/x-www-form-urlencoded",
-        "X-Proxy-Target": target,
-      },
+      headers,
       body: body.toString(),
     });
   } catch (err) {
