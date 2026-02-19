@@ -1,0 +1,521 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Flip Shift Sync — Documentation</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f4f7fe;
+            color: #1a1a1a;
+            line-height: 1.6;
+        }
+        .nav {
+            background: #0F2D96;
+            color: #fff;
+            padding: 16px 32px;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+        .nav img { width: 32px; height: 32px; border-radius: 6px; }
+        .nav h1 { font-size: 18px; font-weight: 600; }
+        .nav a { color: rgba(255,255,255,0.8); text-decoration: none; margin-left: auto; font-size: 14px; }
+        .nav a:hover { color: #fff; }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 32px 24px 64px;
+        }
+        h2 {
+            font-size: 24px;
+            color: #0F2D96;
+            margin: 40px 0 16px;
+            padding-bottom: 8px;
+            border-bottom: 2px solid #e9effd;
+        }
+        h2:first-of-type { margin-top: 16px; }
+        h3 {
+            font-size: 18px;
+            color: #0D2677;
+            margin: 24px 0 12px;
+        }
+        p { margin-bottom: 12px; color: #333; }
+        ul, ol {
+            margin: 0 0 16px 24px;
+            color: #333;
+        }
+        li { margin-bottom: 6px; }
+        code {
+            background: #e9effd;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 13px;
+            font-family: 'SF Mono', Monaco, 'Cascadia Code', monospace;
+        }
+        pre {
+            background: #1e1e2e;
+            color: #cdd6f4;
+            padding: 16px;
+            border-radius: 8px;
+            overflow-x: auto;
+            margin: 12px 0 16px;
+            font-size: 13px;
+            line-height: 1.5;
+        }
+        pre code {
+            background: none;
+            padding: 0;
+            color: inherit;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 12px 0 20px;
+            font-size: 14px;
+        }
+        th {
+            background: #0F2D96;
+            color: #fff;
+            padding: 10px 12px;
+            text-align: left;
+            font-weight: 600;
+        }
+        td {
+            padding: 10px 12px;
+            border-bottom: 1px solid #e9effd;
+        }
+        tr:nth-child(even) td { background: #f8f9ff; }
+        .badge {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+        .required { background: #fee2e2; color: #991b1b; }
+        .optional { background: #e9effd; color: #0F2D96; }
+        .callout {
+            padding: 16px;
+            border-radius: 8px;
+            margin: 16px 0;
+        }
+        .callout-info {
+            background: #e9effd;
+            border-left: 4px solid #0F2D96;
+        }
+        .callout-warning {
+            background: #fef3c7;
+            border-left: 4px solid #d97706;
+        }
+        .callout-success {
+            background: #d1fae5;
+            border-left: 4px solid #059669;
+        }
+        .callout strong { display: block; margin-bottom: 4px; }
+        .diagram {
+            background: #fff;
+            border: 1px solid #e9effd;
+            border-radius: 8px;
+            padding: 24px;
+            margin: 16px 0;
+            text-align: center;
+            font-family: 'SF Mono', Monaco, monospace;
+            font-size: 14px;
+            line-height: 2;
+            color: #0D2677;
+        }
+        .toc {
+            background: #fff;
+            border: 1px solid #e9effd;
+            border-radius: 8px;
+            padding: 20px 24px;
+            margin: 16px 0 32px;
+        }
+        .toc h3 { margin-top: 0; }
+        .toc ol { margin-bottom: 0; }
+        .toc a { color: #0F2D96; text-decoration: none; }
+        .toc a:hover { text-decoration: underline; }
+        footer {
+            text-align: center;
+            padding: 32px;
+            color: #888;
+            font-size: 13px;
+            border-top: 1px solid #e9effd;
+            margin-top: 48px;
+        }
+    </style>
+</head>
+<body>
+    <div class="nav">
+        <img src="assets/icon-80.png" alt="Flip Shift Sync">
+        <h1>Flip Shift Sync</h1>
+        <a href="index.html">&larr; Back to download</a>
+    </div>
+
+    <div class="container">
+
+        <div class="toc">
+            <h3>Contents</h3>
+            <ol>
+                <li><a href="#overview">Overview</a></li>
+                <li><a href="#installation">Installation</a></li>
+                <li><a href="#configuration">Configuration (Settings)</a></li>
+                <li><a href="#spreadsheet">Spreadsheet Format</a></li>
+                <li><a href="#external-id">External ID &amp; Shift Identity</a></li>
+                <li><a href="#sync-workflow">How Syncing Works</a></li>
+                <li><a href="#date-range">Date Range &amp; Per-User Sync</a></li>
+                <li><a href="#architecture">Architecture</a></li>
+                <li><a href="#troubleshooting">Troubleshooting</a></li>
+            </ol>
+        </div>
+
+        <!-- ========== OVERVIEW ========== -->
+        <h2 id="overview">Overview</h2>
+        <p>
+            <strong>Flip Shift Sync</strong> is a Microsoft Excel Office Web Add-in that reads shift plan data from a
+            spreadsheet and syncs it into <a href="https://www.getflip.com">Flip</a> via the
+            Integration Shifts API (v4).
+        </p>
+        <p>It runs as a task-pane panel inside Excel (Desktop or Office 365 Web) and supports:</p>
+        <ul>
+            <li>Reading shift data from any worksheet with the correct column headers</li>
+            <li>Automatic username-to-UUID lookup via the Flip Users API</li>
+            <li>Date range filtering with per-user scoped syncs</li>
+            <li>Auto-generated external IDs written back to the sheet for stable shift identity</li>
+            <li>Shift notifications toggle</li>
+        </ul>
+
+        <!-- ========== INSTALLATION ========== -->
+        <h2 id="installation">Installation</h2>
+        <ol>
+            <li>Download <a href="manifest.xml" download="manifest.xml"><code>manifest.xml</code></a> from the <a href="index.html">home page</a></li>
+            <li>Open Excel (Desktop or Office 365 Web)</li>
+            <li>Go to <strong>Insert</strong> &rarr; <strong>Add-ins</strong> &rarr; <strong>Upload My Add-in</strong></li>
+            <li>Browse to the downloaded <code>manifest.xml</code> and click <strong>Upload</strong></li>
+            <li>Click <strong>Shift Sync</strong> on the Home tab to open the task pane</li>
+        </ol>
+
+        <div class="callout callout-info">
+            <strong>Updating the add-in</strong>
+            The add-in loads its code from GitHub Pages, so code updates take effect automatically when you
+            reopen the task pane. You only need to re-upload <code>manifest.xml</code> if the manifest itself
+            changes (rare).
+        </div>
+
+        <!-- ========== CONFIGURATION ========== -->
+        <h2 id="configuration">Configuration (Settings)</h2>
+        <p>Switch to the <strong>Settings</strong> tab in the task pane to configure your Flip connection:</p>
+
+        <table>
+            <tr>
+                <th>Field</th>
+                <th>Description</th>
+                <th>Example</th>
+            </tr>
+            <tr>
+                <td><strong>Base URL</strong></td>
+                <td>Your Flip tenant URL</td>
+                <td><code>https://mycompany.flip-app.com</code></td>
+            </tr>
+            <tr>
+                <td><strong>Organization</strong></td>
+                <td>System / organization identifier</td>
+                <td><code>mycompany</code></td>
+            </tr>
+            <tr>
+                <td><strong>Client ID</strong></td>
+                <td>OAuth2 API Client ID from Flip Admin</td>
+                <td><code>abc123-def456...</code></td>
+            </tr>
+            <tr>
+                <td><strong>Client Secret</strong></td>
+                <td>OAuth2 API Client Secret</td>
+                <td><code>secret-xyz...</code></td>
+            </tr>
+            <tr>
+                <td><strong>CORS Proxy URL</strong></td>
+                <td>Cloudflare Worker proxy URL (for hosted deployments)</td>
+                <td><code>https://flip-proxy.workers.dev</code></td>
+            </tr>
+        </table>
+
+        <div class="callout callout-warning">
+            <strong>API Client Permissions</strong>
+            Your Flip API client must have the <code>SHIFT_MANAGEMENT</code> role to use the Integration Shifts API.
+            Create one in Flip Admin under <strong>Settings &rarr; API Clients</strong>.
+        </div>
+
+        <p>Settings are saved to your browser's <code>localStorage</code> and persist across sessions.</p>
+
+        <!-- ========== SPREADSHEET FORMAT ========== -->
+        <h2 id="spreadsheet">Spreadsheet Format</h2>
+        <p>
+            The first row of your worksheet must contain column headers. Click <strong>Generate Template</strong>
+            in the add-in to create a pre-formatted worksheet.
+        </p>
+
+        <table>
+            <tr>
+                <th>Column</th>
+                <th>Required</th>
+                <th>Description</th>
+                <th>Format</th>
+            </tr>
+            <tr>
+                <td><code>employee_id</code></td>
+                <td><span class="badge required">Required*</span></td>
+                <td>Flip user UUID</td>
+                <td><code>ad952350-1808-4c38-...</code></td>
+            </tr>
+            <tr>
+                <td><code>username</code></td>
+                <td><span class="badge optional">Optional</span></td>
+                <td>Flip username for auto-lookup when employee_id is empty</td>
+                <td><code>jsmith</code></td>
+            </tr>
+            <tr>
+                <td><code>start_date</code></td>
+                <td><span class="badge required">Required</span></td>
+                <td>Shift start date</td>
+                <td><code>2026-03-01</code> or Excel date</td>
+            </tr>
+            <tr>
+                <td><code>start_time</code></td>
+                <td><span class="badge required">Required</span></td>
+                <td>Shift start time</td>
+                <td><code>08:00</code> or Excel time</td>
+            </tr>
+            <tr>
+                <td><code>end_date</code></td>
+                <td><span class="badge required">Required</span></td>
+                <td>Shift end date</td>
+                <td><code>2026-03-01</code> or Excel date</td>
+            </tr>
+            <tr>
+                <td><code>end_time</code></td>
+                <td><span class="badge required">Required</span></td>
+                <td>Shift end time</td>
+                <td><code>16:00</code> or Excel time</td>
+            </tr>
+            <tr>
+                <td><code>external_id</code></td>
+                <td><span class="badge optional">Optional</span></td>
+                <td>Unique shift identifier (auto-generated if blank &mdash; see below)</td>
+                <td><code>shift-001</code> or auto</td>
+            </tr>
+            <tr>
+                <td><code>location</code></td>
+                <td><span class="badge optional">Optional</span></td>
+                <td>Free-text location label</td>
+                <td><code>Office A</code></td>
+            </tr>
+        </table>
+
+        <p>
+            * If <code>employee_id</code> is empty but <code>username</code> is provided, the add-in will
+            automatically look up the Flip user UUID and write it back to the cell.
+        </p>
+
+        <div class="callout callout-info">
+            <strong>Excel native dates &amp; times</strong>
+            The add-in handles both text values (<code>2026-03-01</code>, <code>08:00</code>) and
+            Excel's native date serials and time fractions. You can format date/time columns however you like.
+        </div>
+
+        <!-- ========== EXTERNAL ID ========== -->
+        <h2 id="external-id">External ID &amp; Shift Identity</h2>
+        <p>
+            Every shift sent to Flip must have an <code>external_id</code> &mdash; a unique key that identifies
+            the shift across sync sessions. This is how Flip knows whether to <strong>update</strong> an existing
+            shift or <strong>create</strong> a new one.
+        </p>
+
+        <h3>How it works</h3>
+        <ol>
+            <li>
+                <strong>First sync</strong> &mdash; If the <code>external_id</code> column is blank (or doesn't exist),
+                the add-in auto-generates a deterministic ID based on the employee, start time, and end time:
+                <pre><code>excel-{employeeUUID}-{startDigits}-{endDigits}</code></pre>
+                This generated ID is <strong>written back into the Excel sheet</strong> so it persists.
+            </li>
+            <li>
+                <strong>Subsequent syncs</strong> &mdash; The cell now has an external_id. Even if you change the
+                shift times (e.g. 10:00&ndash;15:00 &rarr; 10:00&ndash;14:00), the same ID is sent, so Flip
+                <strong>updates the existing shift</strong> rather than creating a duplicate.
+            </li>
+            <li>
+                <strong>New shifts</strong> &mdash; Add a new row with a blank external_id. On the next
+                Read Sheet, a new ID is generated and written back.
+            </li>
+            <li>
+                <strong>Custom IDs</strong> &mdash; You can provide your own external_id values. If the cell
+                is not empty, the add-in uses your value as-is and does not overwrite it.
+            </li>
+        </ol>
+
+        <div class="callout callout-success">
+            <strong>Tip</strong>
+            If the sheet doesn't have an <code>external_id</code> column at all, one is automatically added
+            at the end when you click Read Sheet.
+        </div>
+
+        <!-- ========== SYNC WORKFLOW ========== -->
+        <h2 id="sync-workflow">How Syncing Works</h2>
+
+        <p>The add-in communicates with the Flip Integration Shifts API (v4) using a three-phase sync protocol:</p>
+
+        <div class="diagram">
+            <strong>Sync Lifecycle</strong><br>
+            1. Start Sync &rarr; get <code>sync_id</code><br>
+            2. Send Shifts &rarr; POST shift data in batches<br>
+            3. Complete Sync &rarr; finalize and replace
+        </div>
+
+        <h3>What happens on Complete</h3>
+        <p>
+            When a sync session is completed, <strong>shifts not included in the sync are deleted</strong>
+            within the sync scope. This is the API's "full replacement" model:
+        </p>
+        <ul>
+            <li>Shifts you send &rarr; created or updated (matched by <code>external_id</code>)</li>
+            <li>Shifts you don't send &rarr; deleted from Flip</li>
+        </ul>
+
+        <div class="callout callout-warning">
+            <strong>Important</strong>
+            This means if you remove a row from your spreadsheet and re-sync, that shift will be
+            deleted from Flip. This is by design &mdash; your spreadsheet is the source of truth.
+        </div>
+
+        <h3>Authentication</h3>
+        <p>
+            The add-in uses OAuth2 Client Credentials flow to obtain an access token from your Flip tenant.
+            Tokens are automatically refreshed when they expire.
+        </p>
+
+        <!-- ========== DATE RANGE ========== -->
+        <h2 id="date-range">Date Range &amp; Per-User Sync</h2>
+        <p>
+            When you click <strong>Read Sheet</strong>, a date range picker appears pre-populated with the
+            earliest and latest shift dates in your data. You can adjust this range to control which
+            employees are affected by the sync.
+        </p>
+
+        <h3>How per-user sync works</h3>
+        <ol>
+            <li>The add-in identifies which employees have <strong>at least one shift</strong> within the selected date range</li>
+            <li>For each affected employee, it runs a <strong>separate user-scoped sync</strong>:
+                <ul>
+                    <li><code>POST /sync/start</code> with <code>user_id</code> = that employee's UUID</li>
+                    <li>Sends <strong>all</strong> of that employee's shifts from the spreadsheet (not just the ones in the date range)</li>
+                    <li>Completes the sync</li>
+                </ul>
+            </li>
+            <li>Employees <strong>not</strong> in the date range are completely untouched &mdash; their existing shifts in Flip remain as they are</li>
+        </ol>
+
+        <div class="callout callout-info">
+            <strong>Why send all shifts for each employee?</strong>
+            Because <code>complete</code> deletes shifts not included in the sync. If we only sent
+            shifts within the date range, all of that employee's other shifts would be deleted.
+            By sending all their shifts, we ensure a complete replacement scoped to just that employee.
+        </div>
+
+        <h3>Preview stats</h3>
+        <p>
+            The date range picker shows two live stats:
+        </p>
+        <ul>
+            <li><strong>Shifts in range</strong> &mdash; how many shift rows fall within the selected dates</li>
+            <li><strong>Employees</strong> &mdash; how many unique employees will be synced</li>
+        </ul>
+
+        <!-- ========== ARCHITECTURE ========== -->
+        <h2 id="architecture">Architecture</h2>
+
+        <div class="diagram">
+            <strong>System Architecture</strong><br><br>
+            Excel (Office.js) &rarr; <strong>Flip Shift Sync Add-in</strong> &rarr; Cloudflare Worker (CORS Proxy) &rarr; Flip API<br><br>
+            <em>GitHub Pages hosts the add-in &bull; Cloudflare Worker proxies API calls to bypass CORS</em>
+        </div>
+
+        <h3>Tech stack</h3>
+        <ul>
+            <li><strong>React 18</strong> + <strong>TypeScript</strong> &mdash; UI framework</li>
+            <li><strong>Fluent UI v9</strong> &mdash; Microsoft design system for Office add-ins</li>
+            <li><strong>Office.js</strong> &mdash; Excel JavaScript API for reading/writing worksheet data</li>
+            <li><strong>Webpack 5</strong> &mdash; module bundler</li>
+            <li><strong>GitHub Pages</strong> &mdash; static hosting for the add-in</li>
+            <li><strong>Cloudflare Worker</strong> &mdash; CORS proxy to relay API requests to your Flip tenant</li>
+        </ul>
+
+        <h3>Key source files</h3>
+        <table>
+            <tr><th>File</th><th>Purpose</th></tr>
+            <tr><td><code>App.tsx</code></td><td>Main component &mdash; orchestrates read, transform, sync</td></tr>
+            <tr><td><code>excelService.ts</code></td><td>Reads/writes Excel data via Office.js</td></tr>
+            <tr><td><code>transformService.ts</code></td><td>Converts sheet rows into Flip API shift objects</td></tr>
+            <tr><td><code>flipApiService.ts</code></td><td>HTTP client for the Flip Integration Shifts API</td></tr>
+            <tr><td><code>syncOrchestrator.ts</code></td><td>Runs the sync lifecycle (start &rarr; send &rarr; complete)</td></tr>
+            <tr><td><code>dateRangeService.ts</code></td><td>Date range filtering and per-user grouping</td></tr>
+            <tr><td><code>authService.ts</code></td><td>OAuth2 Client Credentials token management</td></tr>
+            <tr><td><code>userLookupService.ts</code></td><td>Username &rarr; UUID resolution via Flip Users API</td></tr>
+        </table>
+
+        <h3>Data flow</h3>
+        <ol>
+            <li><strong>Read Sheet</strong> &mdash; <code>excelService</code> reads the active worksheet via Office.js, maps columns, validates rows</li>
+            <li><strong>Transform</strong> &mdash; <code>transformService</code> converts rows into <code>FlipShift</code> objects, generates external IDs, writes them back</li>
+            <li><strong>Username Lookup</strong> &mdash; <code>userLookupService</code> resolves any missing employee_ids via the Flip Users API</li>
+            <li><strong>Sync</strong> &mdash; <code>syncOrchestrator</code> runs either a single org-wide sync or per-user syncs (based on date range)</li>
+        </ol>
+
+        <!-- ========== TROUBLESHOOTING ========== -->
+        <h2 id="troubleshooting">Troubleshooting</h2>
+
+        <h3>Common issues</h3>
+        <table>
+            <tr><th>Problem</th><th>Solution</th></tr>
+            <tr>
+                <td>Task pane shows 404 or blank page</td>
+                <td>Re-download <code>manifest.xml</code> and re-upload it in Excel. The manifest URLs may have changed.</td>
+            </tr>
+            <tr>
+                <td>"Authentication failed" error</td>
+                <td>Check your Client ID and Client Secret in Settings. Ensure the API client has the <code>SHIFT_MANAGEMENT</code> role.</td>
+            </tr>
+            <tr>
+                <td>"Sync already in progress" error</td>
+                <td>A previous sync session wasn't completed or cancelled. Wait a few minutes for it to time out, or create a new API client.</td>
+            </tr>
+            <tr>
+                <td>Duplicate shifts in Flip</td>
+                <td>Make sure your <code>external_id</code> column has values. Click Read Sheet to auto-populate any blank cells. Re-sync to update.</td>
+            </tr>
+            <tr>
+                <td>Shifts not being deleted</td>
+                <td>The sync's "complete" step deletes shifts not included. Ensure you're syncing the correct date range and that the affected employee's <strong>all</strong> remaining shifts are in the sheet.</td>
+            </tr>
+            <tr>
+                <td>Employee ID warnings</td>
+                <td>Flip requires user UUIDs (not names). Either paste UUIDs directly into <code>employee_id</code>, or fill in the <code>username</code> column and let the add-in look them up.</td>
+            </tr>
+            <tr>
+                <td>CORS errors in console</td>
+                <td>You need a CORS proxy for hosted deployments. Set the <strong>CORS Proxy URL</strong> in Settings to your Cloudflare Worker URL.</td>
+            </tr>
+            <tr>
+                <td>Shifts appear in Flip but don't disappear after removal</td>
+                <td>Flip's mobile app may cache shift data. Pull to refresh or close and reopen the app.</td>
+            </tr>
+        </table>
+
+        <footer>
+            Flip Shift Sync &mdash; Built for <a href="https://www.getflip.com" style="color: #0F2D96;">Flip</a>
+        </footer>
+    </div>
+</body>
+</html>
