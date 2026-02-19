@@ -140,6 +140,16 @@ export interface ValidationWarning {
   message: string;
 }
 
+// --- Date Range ---
+
+/** Date range for filtering which employees to sync */
+export interface DateRange {
+  /** Start of range, inclusive (YYYY-MM-DD) */
+  from: string;
+  /** End of range, inclusive (YYYY-MM-DD) */
+  to: string;
+}
+
 // --- UI State ---
 
 export type ExportStep =
@@ -149,6 +159,7 @@ export type ExportStep =
   | "starting_sync"
   | "sending_shifts"
   | "completing"
+  | "syncing_users"
   | "done"
   | "error"
   | "cancelled";
@@ -164,6 +175,10 @@ export interface SyncProgress {
   syncId?: string;
   /** Error details if step is "error" */
   error?: string;
+  /** Current employee index (1-based) — for per-user sync */
+  currentEmployee?: number;
+  /** Total employees to sync — for per-user sync */
+  totalEmployees?: number;
 }
 
 /** Options for a sync run */

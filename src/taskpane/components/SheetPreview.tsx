@@ -64,9 +64,11 @@ const MAX_PREVIEW_ROWS = 10;
 
 interface SheetPreviewProps {
   data: SheetReadResult;
+  /** Number of shifts in the active date range (omit if no date range) */
+  shiftsInRange?: number;
 }
 
-const SheetPreview: React.FC<SheetPreviewProps> = ({ data }) => {
+const SheetPreview: React.FC<SheetPreviewProps> = ({ data, shiftsInRange }) => {
   const styles = useStyles();
   const { rows, totalRows, warnings } = data;
   const previewRows = rows.slice(0, MAX_PREVIEW_ROWS);
@@ -85,6 +87,11 @@ const SheetPreview: React.FC<SheetPreviewProps> = ({ data }) => {
         {totalRows !== rows.length && (
           <Badge appearance="tint" color="warning">
             {totalRows - rows.length} skipped
+          </Badge>
+        )}
+        {shiftsInRange !== undefined && (
+          <Badge appearance="tint" color="brand">
+            {shiftsInRange} in date range
           </Badge>
         )}
         {errorWarnings.length > 0 && (

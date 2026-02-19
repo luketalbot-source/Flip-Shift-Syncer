@@ -18,7 +18,8 @@ import {
   ArrowSync24Regular,
   Dismiss24Regular,
 } from "@fluentui/react-icons";
-import { ExportStep } from "../types";
+import { ExportStep, DateRange } from "../types";
+import DateRangePicker from "./DateRangePicker";
 
 const useStyles = makeStyles({
   container: {
@@ -54,6 +55,13 @@ interface SyncControlsProps {
   onSync: () => void;
   onCancel: () => void;
   onGenerateTemplate: () => void;
+  /** Date range for filtering (null when no sheet data loaded) */
+  dateRange: DateRange | null;
+  onDateRangeChange: (range: DateRange) => void;
+  totalShifts: number;
+  shiftsInRange: number;
+  employeesAffected: number;
+  dateRangeValidationError: string | null;
 }
 
 const SyncControls: React.FC<SyncControlsProps> = ({
@@ -66,11 +74,17 @@ const SyncControls: React.FC<SyncControlsProps> = ({
   onSync,
   onCancel,
   onGenerateTemplate,
+  dateRange,
+  onDateRangeChange,
+  totalShifts,
+  shiftsInRange,
+  employeesAffected,
+  dateRangeValidationError,
 }) => {
   const styles = useStyles();
-  const isBusy = ["reading", "starting_sync", "sending_shifts", "completing", "validating"].includes(step);
-  const canSync = hasData && configValid && !isBusy;
-  const canCancel = ["starting_sync", "sending_shifts"].includes(step);
+  const isBusy = ["reading", "starting_sync", "sending_shifts", "completing", "validating", "syncing_users"].includes(step);
+  const canSync = hasData && configValid && !isBusy && !dateRangeValidationError;
+  const canCancel = ["starting_sync", "sending_shifts", "syncing_users"].includes(step);
   const canRead = !isBusy;
 
   return (
@@ -92,6 +106,19 @@ const SyncControls: React.FC<SyncControlsProps> = ({
           onChange={(_e, data) => onNotificationsChange(data.checked)}
           disabled={isBusy}
         />
+
+        {/* Date range picker — only shown when sheet data is loaded */}
+        {dateRange && (
+          <DateRangePicker
+            range={dateRange}
+            onChange={onDateRangeChange}
+            totalShifts={totalShifts}
+            shiftsInRange={shiftsInRange}
+            employeesAffected={employeesAffected}
+            disabled={isBusy}
+            validationError={dateRangeValidationError}
+          />
+        )}
       </div>
 
       {/* Action buttons */}
@@ -139,8 +166,10 @@ const SyncControls: React.FC<SyncControlsProps> = ({
         <div className={styles.warning}>
           <MessageBar intent="warning">
             <MessageBarBody>
-              Completing a sync <strong>replaces all previously synced shift data</strong> in the sync scope.
-              Make sure this sheet contains the complete dataset.
+              {dateRange
+                ? <>For each affected employee, syncing <strong>replaces all their previously synced shifts</strong>. Make sure the sheet contains each employee's complete schedule.</>
+                : <>Completing a sync <strong>replaces all previously synced shift data</strong> in the sync scope. Make sure this sheet contains the complete dataset.</>
+              }
             </MessageBarBody>
           </MessageBar>
         </div>

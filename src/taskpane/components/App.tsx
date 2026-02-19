@@ -2,7 +2,7 @@
 // App Component — main layout and workflow orchestrator
 // ============================================================
 
-import React, { useState, useCallback, useRef, useEffect } from "react";
+import React, { useState, useCallback, useRef, useEffect, useMemo } from "react";
 import {
   FluentProvider,
   createLightTheme,
@@ -36,11 +36,18 @@ const flipBrand: BrandVariants = {
   160: "#FAFBFF",
 };
 const flipTheme = createLightTheme(flipBrand);
-import { SyncConfig, SheetReadResult, SyncProgress as SyncProgressType, ExportStep, FlipShift } from "../types";
+import { SyncConfig, SheetReadResult, SyncProgress as SyncProgressType, ExportStep, FlipShift, DateRange } from "../types";
 import { loadConfig, isConfigValid } from "../config";
 import { readShiftData, generateTemplateSheet } from "../services/excelService";
 import { transformToFlipShifts } from "../services/transformService";
-import { executeSyncWorkflow } from "../services/syncOrchestrator";
+import { executeSyncWorkflow, executePerUserSyncWorkflow } from "../services/syncOrchestrator";
+import {
+  computeDateRange,
+  getShiftsForPerUserSync,
+  countShiftsInRange,
+  getAffectedEmployees,
+  validateDateRange,
+} from "../services/dateRangeService";
 import { resolveEmployeeIds } from "../services/userLookupService";
 import Settings from "./Settings";
 import SheetPreview from "./SheetPreview";
@@ -98,9 +105,24 @@ const App: React.FC = () => {
   const [step, setStep] = useState<ExportStep>("idle");
   const [progress, setProgress] = useState<SyncProgressType | null>(null);
   const [notificationsEnabled, setNotificationsEnabled] = useState(false);
+  const [dateRange, setDateRange] = useState<DateRange | null>(null);
   const abortControllerRef = useRef<AbortController | null>(null);
 
   const configValid = isConfigValid(config);
+
+  // Derived date-range stats (only computed when we have shifts AND a date range)
+  const shiftsInRange = useMemo(
+    () => (dateRange && shifts.length > 0 ? countShiftsInRange(shifts, dateRange) : 0),
+    [shifts, dateRange]
+  );
+  const employeesAffected = useMemo(
+    () => (dateRange && shifts.length > 0 ? getAffectedEmployees(shifts, dateRange).size : 0),
+    [shifts, dateRange]
+  );
+  const dateRangeValidationError = useMemo(
+    () => (dateRange ? validateDateRange(dateRange) : null),
+    [dateRange]
+  );
 
   // Reload config when switching to sync tab
   useEffect(() => {
@@ -136,6 +158,7 @@ const App: React.FC = () => {
     setProgress(null);
     setSheetData(null);
     setShifts([]);
+    setDateRange(null);
 
     try {
       const result = await readShiftData();
@@ -173,6 +196,12 @@ const App: React.FC = () => {
       const transformed = transformToFlipShifts(result.rows);
       setShifts(transformed);
 
+      // Auto-populate date range from the data
+      const autoRange = computeDateRange(transformed);
+      if (autoRange) {
+        setDateRange(autoRange);
+      }
+
       setStep("idle");
     } catch (error) {
       setStep("error");
@@ -191,19 +220,43 @@ const App: React.FC = () => {
     const abortController = new AbortController();
     abortControllerRef.current = abortController;
 
+    const progressCb = (p: SyncProgressType) => {
+      setProgress(p);
+      setStep(p.step);
+    };
+
     try {
-      await executeSyncWorkflow(
-        config,
-        shifts,
-        {
+      if (dateRange) {
+        // Per-user sync: each affected employee gets their own user-scoped sync
+        const employeeShifts = getShiftsForPerUserSync(shifts, dateRange);
+
+        if (employeeShifts.size === 0) {
+          setProgress({
+            step: "error",
+            message: "No employees have shifts in the selected date range.",
+            error: "No employees have shifts in the selected date range.",
+          });
+          setStep("error");
+          return;
+        }
+
+        await executePerUserSyncWorkflow(
+          config,
+          employeeShifts,
           notificationsEnabled,
-        },
-        (p) => {
-          setProgress(p);
-          setStep(p.step);
-        },
-        abortController.signal
-      );
+          progressCb,
+          abortController.signal
+        );
+      } else {
+        // Org-scoped sync (legacy): single sync session with all shifts
+        await executeSyncWorkflow(
+          config,
+          shifts,
+          { notificationsEnabled },
+          progressCb,
+          abortController.signal
+        );
+      }
     } catch (error) {
       // Error is already reported via the progress callback
       if (error instanceof DOMException && error.name === "AbortError") {
@@ -212,7 +265,7 @@ const App: React.FC = () => {
     } finally {
       abortControllerRef.current = null;
     }
-  }, [config, shifts, configValid, notificationsEnabled]);
+  }, [config, shifts, configValid, notificationsEnabled, dateRange]);
 
   // --- Cancel ---
   const handleCancel = useCallback(() => {
@@ -264,6 +317,12 @@ const App: React.FC = () => {
                   onSync={handleSync}
                   onCancel={handleCancel}
                   onGenerateTemplate={handleGenerateTemplate}
+                  dateRange={dateRange}
+                  onDateRangeChange={setDateRange}
+                  totalShifts={shifts.length}
+                  shiftsInRange={shiftsInRange}
+                  employeesAffected={employeesAffected}
+                  dateRangeValidationError={dateRangeValidationError}
                 />
               </div>
 
@@ -271,7 +330,7 @@ const App: React.FC = () => {
               {sheetData && (
                 <div className={styles.section}>
                   <div className={styles.sectionTitle}>Sheet Data</div>
-                  <SheetPreview data={sheetData} />
+                  <SheetPreview data={sheetData} shiftsInRange={dateRange ? shiftsInRange : undefined} />
                 </div>
               )}
 

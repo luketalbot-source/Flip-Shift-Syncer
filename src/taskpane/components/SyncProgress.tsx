@@ -58,19 +58,25 @@ interface StepDef {
   label: string;
 }
 
-const STEPS: StepDef[] = [
+const SINGLE_STEPS: StepDef[] = [
   { id: "starting_sync", label: "Start sync session" },
   { id: "sending_shifts", label: "Send shift data" },
   { id: "completing", label: "Complete sync" },
 ];
 
-function getStepIndex(step: ExportStep): number {
-  return STEPS.findIndex((s) => s.id === step);
+const PER_USER_STEPS: StepDef[] = [
+  { id: "syncing_users", label: "Sync employees" },
+];
+
+function getStepIndex(step: ExportStep, steps: StepDef[]): number {
+  return steps.findIndex((s) => s.id === step);
 }
 
 const SyncProgressComponent: React.FC<SyncProgressProps> = ({ progress }) => {
   const styles = useStyles();
-  const currentIndex = getStepIndex(progress.step);
+  const isPerUser = progress.totalEmployees !== undefined;
+  const STEPS = isPerUser ? PER_USER_STEPS : SINGLE_STEPS;
+  const currentIndex = getStepIndex(progress.step, STEPS);
   const isDone = progress.step === "done";
   const isError = progress.step === "error";
   const isCancelled = progress.step === "cancelled";
@@ -124,6 +130,16 @@ const SyncProgressComponent: React.FC<SyncProgressProps> = ({ progress }) => {
             <div key={step.id} className={`${styles.step} ${getStepClass(state)}`}>
               {renderIcon(state)}
               <span>{step.label}</span>
+              {step.id === "syncing_users" &&
+                progress.totalEmployees !== undefined &&
+                progress.currentEmployee !== undefined && (
+                  <span>
+                    ({progress.currentEmployee}/{progress.totalEmployees}
+                    {progress.shiftsTotal !== undefined && progress.shiftsSent !== undefined
+                      ? ` — ${progress.shiftsSent}/${progress.shiftsTotal} shifts`
+                      : ""})
+                  </span>
+                )}
               {step.id === "sending_shifts" &&
                 progress.shiftsTotal !== undefined &&
                 progress.shiftsSent !== undefined && (
