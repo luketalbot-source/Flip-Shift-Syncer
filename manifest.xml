@@ -6,17 +6,18 @@
   <DefaultLocale>en-US</DefaultLocale>
   <DisplayName DefaultValue="Flip Shift Sync"/>
   <Description DefaultValue="Sync shift plans from Excel spreadsheets into Flip"/>
-  <IconUrl DefaultValue="https://localhost:3000/assets/icon-32.png"/>
-  <HighResolutionIconUrl DefaultValue="https://localhost:3000/assets/icon-64.png"/>
+  <IconUrl DefaultValue="https://luketalbot-source.github.io/Flip-Shift-Syncer/assets/icon-32.png"/>
+  <HighResolutionIconUrl DefaultValue="https://luketalbot-source.github.io/Flip-Shift-Syncer/assets/icon-64.png"/>
   <SupportUrl DefaultValue="https://www.getflip.com"/>
   <AppDomains>
     <AppDomain>https://www.getflip.com</AppDomain>
+    <AppDomain>https://luketalbot-source.github.io</AppDomain>
   </AppDomains>
   <Hosts>
     <Host Name="Workbook"/>
   </Hosts>
   <DefaultSettings>
-    <SourceLocation DefaultValue="https://localhost:3000/taskpane.html"/>
+    <SourceLocation DefaultValue="https://luketalbot-source.github.io/Flip-Shift-Syncer/taskpane.html"/>
   </DefaultSettings>
   <Permissions>ReadWriteDocument</Permissions>
   <VersionOverrides xmlns="http://schemas.microsoft.com/office/taskpaneappversionoverrides" xsi:type="VersionOverridesV1_0">
@@ -62,14 +63,14 @@
     </Hosts>
     <Resources>
       <bt:Images>
-        <bt:Image id="Icon.16x16" DefaultValue="https://localhost:3000/assets/icon-16.png"/>
-        <bt:Image id="Icon.32x32" DefaultValue="https://localhost:3000/assets/icon-32.png"/>
-        <bt:Image id="Icon.80x80" DefaultValue="https://localhost:3000/assets/icon-80.png"/>
+        <bt:Image id="Icon.16x16" DefaultValue="https://luketalbot-source.github.io/Flip-Shift-Syncer/assets/icon-16.png"/>
+        <bt:Image id="Icon.32x32" DefaultValue="https://luketalbot-source.github.io/Flip-Shift-Syncer/assets/icon-32.png"/>
+        <bt:Image id="Icon.80x80" DefaultValue="https://luketalbot-source.github.io/Flip-Shift-Syncer/assets/icon-80.png"/>
       </bt:Images>
       <bt:Urls>
         <bt:Url id="GetStarted.LearnMoreUrl" DefaultValue="https://www.getflip.com"/>
-        <bt:Url id="Commands.Url" DefaultValue="https://localhost:3000/commands.html"/>
-        <bt:Url id="Taskpane.Url" DefaultValue="https://localhost:3000/taskpane.html"/>
+        <bt:Url id="Commands.Url" DefaultValue="https://luketalbot-source.github.io/Flip-Shift-Syncer/commands.html"/>
+        <bt:Url id="Taskpane.Url" DefaultValue="https://luketalbot-source.github.io/Flip-Shift-Syncer/taskpane.html"/>
       </bt:Urls>
       <bt:ShortStrings>
         <bt:String id="GetStarted.Title" DefaultValue="Flip Shift Sync"/>
