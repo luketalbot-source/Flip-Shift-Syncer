@@ -190,10 +190,47 @@
 
         <!-- ========== INSTALLATION ========== -->
         <h2 id="installation">Installation</h2>
+        <p>
+            First, <a href="manifest.xml" download="manifest.xml">download <code>manifest.xml</code></a>
+            from the <a href="index.html">home page</a>. Then follow the instructions for your platform:
+        </p>
+
+        <h3>Excel for the Web (Office 365)</h3>
         <ol>
-            <li>Download <a href="manifest.xml" download="manifest.xml"><code>manifest.xml</code></a> from the <a href="index.html">home page</a></li>
-            <li>Open Excel (Desktop or Office 365 Web)</li>
-            <li>Go to <strong>Insert</strong> &rarr; <strong>Add-ins</strong> &rarr; <strong>Upload My Add-in</strong></li>
+            <li>Open a workbook in Excel Online</li>
+            <li>Go to <strong>Home</strong> &rarr; <strong>Add-ins</strong></li>
+            <li>Click <strong>More Add-ins</strong> (or the add-ins icon)</li>
+            <li>Click <strong>MY ADD-INS</strong> tab &rarr; <strong>Upload My Add-in</strong></li>
+            <li>Browse to the downloaded <code>manifest.xml</code> and click <strong>Upload</strong></li>
+            <li>Click <strong>Shift Sync</strong> on the Home tab to open the task pane</li>
+        </ol>
+
+        <h3>Excel Desktop &mdash; Mac</h3>
+        <p>On Mac, you sideload the manifest by copying it to a special folder:</p>
+        <ol>
+            <li>Open <strong>Finder</strong></li>
+            <li>Press <strong>Cmd + Shift + G</strong> to open "Go to folder"</li>
+            <li>Paste this path:
+                <pre><code>~/Library/Containers/com.microsoft.Excel/Data/Documents/wef</code></pre>
+                If the <code>wef</code> folder doesn't exist, create it.
+            </li>
+            <li>Copy the downloaded <code>manifest.xml</code> into the <code>wef</code> folder</li>
+            <li>Quit and reopen Excel</li>
+            <li>Go to <strong>Home</strong> &rarr; <strong>Add-ins</strong> &mdash; the add-in should appear under <strong>Developer Add-ins</strong></li>
+        </ol>
+
+        <div class="callout callout-warning">
+            <strong>Mac note</strong>
+            Sideloaded add-ins on Mac need to be re-enabled each time Excel is launched.
+            To remove the add-in, delete <code>manifest.xml</code> from the <code>wef</code> folder.
+        </div>
+
+        <h3>Excel Desktop &mdash; Windows</h3>
+        <ol>
+            <li>Open a workbook in Excel</li>
+            <li>Go to <strong>Home</strong> &rarr; <strong>Add-ins</strong></li>
+            <li>Click <strong>More Add-ins</strong></li>
+            <li>Click <strong>MY ADD-INS</strong> tab &rarr; <strong>Upload My Add-in</strong></li>
             <li>Browse to the downloaded <code>manifest.xml</code> and click <strong>Upload</strong></li>
             <li>Click <strong>Shift Sync</strong> on the Home tab to open the task pane</li>
         </ol>
