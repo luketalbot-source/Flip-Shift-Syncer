@@ -80,6 +80,22 @@ function generateExternalId(employeeId: string, startsAt: string, endsAt: string
   return `excel-${employeeId}-${startClean}-${endClean}${suffix}`;
 }
 
+/** A record of an auto-generated external_id that should be written back to Excel */
+export interface ExternalIdWriteBack {
+  /** 1-based Excel row number */
+  rowNumber: number;
+  /** The generated external_id value */
+  externalId: string;
+}
+
+/** Result of transforming sheet rows into Flip shifts */
+export interface TransformResult {
+  /** The transformed shifts ready for the Flip API */
+  shifts: FlipShift[];
+  /** External IDs that were auto-generated and should be written back to Excel */
+  externalIdWriteBacks: ExternalIdWriteBack[];
+}
+
 /**
  * Transform an array of SheetRow objects into FlipShift objects
  * ready for the Flip Integration Shifts API.
@@ -89,10 +105,13 @@ function generateExternalId(employeeId: string, startsAt: string, endsAt: string
  *
  * IMPORTANT: The Flip API requires every shift to include either an internal
  * `id` or an `external_id`. If the spreadsheet row doesn't provide one, a
- * deterministic external_id is auto-generated.
+ * deterministic external_id is auto-generated and recorded for write-back
+ * to Excel — so that subsequent syncs reuse the same ID even if the shift
+ * times are edited.
  */
-export function transformToFlipShifts(rows: SheetRow[]): FlipShift[] {
+export function transformToFlipShifts(rows: SheetRow[]): TransformResult {
   const shifts: FlipShift[] = [];
+  const externalIdWriteBacks: ExternalIdWriteBack[] = [];
 
   // Track occurrences of each (employee, start, end) combination so we can
   // generate stable, unique external_ids without relying on row position.
@@ -127,6 +146,12 @@ export function transformToFlipShifts(rows: SheetRow[]): FlipShift[] {
       occurrenceCounts.set(occurrenceKey, currentCount + 1);
 
       shift.external_id = generateExternalId(row.employee_id, startsAt, endsAt, currentCount);
+
+      // Record for write-back to Excel so the ID persists across edits
+      externalIdWriteBacks.push({
+        rowNumber: row._rowNumber,
+        externalId: shift.external_id,
+      });
     }
 
     if (row.location) {
@@ -136,5 +161,5 @@ export function transformToFlipShifts(rows: SheetRow[]): FlipShift[] {
     shifts.push(shift);
   }
 
-  return shifts;
+  return { shifts, externalIdWriteBacks };
 }

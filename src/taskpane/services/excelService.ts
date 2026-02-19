@@ -243,6 +243,49 @@ export async function writeEmployeeIds(
 }
 
 /**
+ * Write auto-generated external IDs back to the Excel sheet.
+ * If the sheet doesn't have an external_id column yet, one is added
+ * after the last column in the used range.
+ *
+ * @param sheetName — Name of the worksheet to write to
+ * @param externalIdColIndex — 0-based column index of the external_id column, or undefined if absent
+ * @param updates — Array of { rowNumber (1-based Excel row), externalId (generated value) }
+ * @param totalColumns — Total number of columns in the header row (used when adding a new column)
+ */
+export async function writeExternalIds(
+  sheetName: string,
+  externalIdColIndex: number | undefined,
+  updates: Array<{ rowNumber: number; externalId: string }>,
+  totalColumns: number
+): Promise<void> {
+  if (updates.length === 0) return;
+
+  await Excel.run(async (context) => {
+    const sheet = context.workbook.worksheets.getItem(sheetName);
+    let colIndex: number;
+
+    if (externalIdColIndex !== undefined) {
+      // Column already exists — write directly
+      colIndex = externalIdColIndex;
+    } else {
+      // Add a new "external_id" header at the end of existing columns
+      colIndex = totalColumns;
+      const headerCell = sheet.getCell(0, colIndex);
+      headerCell.values = [["external_id"]];
+      headerCell.format.font.bold = true;
+    }
+
+    for (const update of updates) {
+      // rowNumber is 1-based, getCell is 0-based
+      const cell = sheet.getCell(update.rowNumber - 1, colIndex);
+      cell.values = [[update.externalId]];
+    }
+
+    await context.sync();
+  });
+}
+
+/**
  * Generate a new template worksheet with the correct column headers and a sample data row.
  * Mandatory columns are marked with an asterisk (*).
  */

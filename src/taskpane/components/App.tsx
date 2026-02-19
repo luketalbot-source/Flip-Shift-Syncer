@@ -38,7 +38,7 @@ const flipBrand: BrandVariants = {
 const flipTheme = createLightTheme(flipBrand);
 import { SyncConfig, SheetReadResult, SyncProgress as SyncProgressType, ExportStep, FlipShift, DateRange } from "../types";
 import { loadConfig, isConfigValid } from "../config";
-import { readShiftData, generateTemplateSheet } from "../services/excelService";
+import { readShiftData, generateTemplateSheet, writeExternalIds } from "../services/excelService";
 import { transformToFlipShifts } from "../services/transformService";
 import { executeSyncWorkflow, executePerUserSyncWorkflow } from "../services/syncOrchestrator";
 import {
@@ -193,8 +193,29 @@ const App: React.FC = () => {
       setSheetData(result);
 
       // Transform to Flip shifts
-      const transformed = transformToFlipShifts(result.rows);
+      const { shifts: transformed, externalIdWriteBacks } = transformToFlipShifts(result.rows);
       setShifts(transformed);
+
+      // Write auto-generated external IDs back to the sheet so they persist
+      // across edits. This ensures that if a user changes shift times, the
+      // same external_id is sent on the next sync (updating rather than creating).
+      if (externalIdWriteBacks.length > 0) {
+        try {
+          await writeExternalIds(
+            result.sheetName,
+            result.columnMapping.external_id,
+            externalIdWriteBacks.map((wb) => ({ rowNumber: wb.rowNumber, externalId: wb.externalId })),
+            result.headers.length
+          );
+        } catch (writeErr) {
+          // Non-fatal — warn but continue
+          result.warnings.push({
+            row: 0,
+            column: "external_id",
+            message: `Could not write external IDs to sheet: ${writeErr instanceof Error ? writeErr.message : String(writeErr)}`,
+          });
+        }
+      }
 
       // Auto-populate date range from the data
       const autoRange = computeDateRange(transformed);
