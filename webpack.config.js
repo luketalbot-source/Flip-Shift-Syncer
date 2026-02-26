@@ -1,6 +1,12 @@
 /* eslint-disable no-undef */
 
-const devCerts = require("office-addin-dev-certs");
+let devCerts;
+try {
+  devCerts = require("office-addin-dev-certs");
+} catch {
+  // office-addin-dev-certs not available (e.g. Linux CI/CD); HTTPS dev server disabled
+  devCerts = null;
+}
 const CopyWebpackPlugin = require("copy-webpack-plugin");
 const HtmlWebpackPlugin = require("html-webpack-plugin");
 const https = require("https");
@@ -14,6 +20,7 @@ const urlDev = "https://localhost:3000/";
 const urlProd = "https://your-username.github.io/flip-shift-sync/";
 
 async function getHttpsOptions() {
+  if (!devCerts) return {};
   const httpsOptions = await devCerts.getHttpsServerOptions();
   return { ca: httpsOptions.ca, key: httpsOptions.key, cert: httpsOptions.cert };
 }
