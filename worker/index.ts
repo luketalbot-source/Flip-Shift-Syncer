@@ -18,7 +18,7 @@
 // ============================================================
 
 /** Only allow proxying to these domains (prevents open-proxy abuse) */
-const ALLOWED_TARGETS = [".flip-app.com", ".getflip.com"];
+const ALLOWED_TARGETS = [".flip-app.com", ".flip-app.dev", ".getflip.com"];
 
 function isAllowedTarget(url: string): boolean {
   try {
@@ -66,7 +66,11 @@ export default {
     // Validate the target is an allowed Flip domain
     if (!isAllowedTarget(targetBase)) {
       return new Response(
-        JSON.stringify({ error: "Target domain not allowed. Only *.flip-app.com and *.getflip.com are permitted." }),
+        JSON.stringify({
+          error: `Target domain not allowed. Only ${ALLOWED_TARGETS.map(
+            (suffix) => `*${suffix}`
+          ).join(", ")} are permitted.`,
+        }),
         {
           status: 403,
           headers: { "Content-Type": "application/json", ...corsHeaders(origin) },
