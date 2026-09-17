@@ -18,7 +18,7 @@
 // ============================================================
 
 /** Only allow proxying to these domains (prevents open-proxy abuse) */
-const ALLOWED_TARGETS = [".flip-app.com", ".flip-app.dev", ".getflip.com"];
+const ALLOWED_TARGETS = [".flip-app.com", ".flip-app.dev", ".flipnext.de", ".getflip.com"];
 
 function isAllowedTarget(url: string): boolean {
   try {
